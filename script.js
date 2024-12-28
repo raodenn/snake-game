@@ -12,11 +12,8 @@ var snakeLength = 1;
 var snakeX = 250;
 var snakeY = 250;
 var dots = [];
-
-function drawBackground() {
-    canvas2d.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-}
-
+var score = 0;
+var highScore = localStorage.getItem("highScore") || 0;  
 function drawApple(x, y) {
     canvas2d.fillStyle = "red";
     canvas2d.beginPath();
@@ -28,18 +25,17 @@ function drawApple(x, y) {
 }
 
 function spawnDots() {
-    if(dots.length < 10) {
+    if(dots.length < 3) {
       var dotX = Math.floor(Math.random() * canvas.width);
       var dotY = Math.floor(Math.random() * canvas.height);
       dots.push({ x: dotX, y: dotY });
     }
     for (var i = 0; i < dots.length; i++) {
-          
         drawApple(dots[i].x, dots[i].y);
     }
-  }
-  
-  document.onkeydown = function (event) {
+}
+
+document.onkeydown = function (event) {
     switch (event.code) {
         case "ArrowLeft": 
             if (directionX === 0) { 
@@ -74,36 +70,39 @@ function moveSnake() {
     snakeY += directionY;
     while (snakeSegments.length > snakeLength) {
         snakeSegments.pop();
-      }
-  }
+    }
+}
 
 function checkCollision() {
+    if (snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height) {
+        gameOver();
+        return;
+    }
+
+    for (var i = 1; i < snakeSegments.length; i++) {
+        if (snakeX === snakeSegments[i].x && snakeY === snakeSegments[i].y) {
+            gameOver();
+            return;
+        }
+    }
+
     for (var i = 0; i < dots.length; i++) {
         if (snakeX < dots[i].x + 10 && 
             snakeX + 10 > dots[i].x && 
             snakeY < dots[i].y + 10 && 
             snakeY + 10 > dots[i].y) {
-              snakeLength++;
-              dots.splice(i, 1);
-          }
+            snakeLength++;
+            score++;
+            dots.splice(i, 1);
+        }
     }
-    if (snakeX < -10 || 
-        snakeY < -10 || 
-        snakeX > canvas.width+10 ||
-        snakeY > canvas.height+10) {
-          gameOver();
-      }
-      for (var i = 1; i < snakeSegments.length; i++) {
-        if (snakeX === snakeSegments[i].x && snakeY === snakeSegments[i].y) {
-            gameOver();
-          }
-      }
-  }
- 
+}
+
+
 function drawSnake() {
     canvas2d.clearRect(0, 0, canvas.width, canvas.height);
+
     for (var i = 0; i < snakeSegments.length; i++) {
-        
         var gradient = canvas2d.createLinearGradient(
             snakeSegments[i].x,
             snakeSegments[i].y,
@@ -122,24 +121,31 @@ function drawSnake() {
             canvas2d.fillRect(snakeSegments[i].x + 6, snakeSegments[i].y + 2, 2, 2); 
         }
     }
+
+    document.getElementById("score").textContent = "Score: " + score;
+    document.getElementById("highscore").textContent = "Highscore: " + highScore;
 }
 
-
 function gameOver() {
+    if (score > highScore) {
+        highScore = score;  
+        localStorage.setItem("highScore", highScore);  
+    }
+    
     setTimeout(function() {
-      alert("Game over!");
+      alert("Game over! Final Score: " + score);
     }, 500); 
-    gameEnded = true
-  }
-  function gameLoop() {
-    drawBackground();
+    gameEnded = true;
+}
+
+function gameLoop() {
     moveSnake();
     drawSnake();
     spawnDots();
     checkCollision();
-    if(!gameEnded) {
-      setTimeout(gameLoop, 100);
+    if (!gameEnded) {
+        setTimeout(gameLoop, 100);
     }
-  }
+}
 
- gameLoop();
+gameLoop();

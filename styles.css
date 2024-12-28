@@ -9,8 +9,16 @@ body{
     background-color:#a9d751;
 
   }
-  h2 {
+h2 {
     text-align:center;
     font-family:Arial;
     font-size:36px;
   } 
+#scoreboard {
+    position: absolute;
+    left: 520px; 
+    top: 30px;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    color: black;
+}
